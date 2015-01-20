@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coding Assignment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+<h1>This page was created for testing the api in the console</h1>
+
+<script src="q.js"></script>
+<script src="api.js"></script>
+
+<script>
+    //a few tests to perform
+
+    //create test folder at root
+    FileAPI.create('testFolder', FileAPI.File.TYPES.FOLDER).then(function(file){
+        console.log(file);
+    });
+
+    //create a test file in that test folder
+    FileAPI.create('testFolder/testFile', FileAPI.File.TYPES.FILE);
+
+    var filesToCreate = [
+        { path: 'testFileAtRoot1', type: FileAPI.File.TYPES.FILE },
+        { path: 'testFileAtRoot2', type: FileAPI.File.TYPES.FILE },
+        { path: 'testFileAtRoot3', type: FileAPI.File.TYPES.FILE },
+        { path: 'fileToBeDeleted', type: FileAPI.File.TYPES.FILE },
+        { path: 'folderToBeDeleted', type: FileAPI.File.TYPES.FOLDER },
+        { path: 'testFolder/anotherTestFolder', type: FileAPI.File.TYPES.FOLDER },
+        { path: 'testFolder/anotherTestFolder/anotherTestFile.txt', type: FileAPI.File.TYPES.FILE }
+    ];
+
+    //create multiple files at once using array syntax
+    FileAPI.create(filesToCreate).then(function(files){
+        console.log(files)
+    });
+
+    //make sure original test file in test folder is still there
+    FileAPI.read('testFolder/testFile').then(function(file){
+        console.log(file);
+    });
+
+    //move a file at root to the test folder
+    FileAPI.move("testFileAtRoot1", "testFolder/testFileFromRoot1").then(function(){
+        FileAPI.listAll();
+    });
+
+    var filesToDelete = [ 'fileToBeDeleted', 'folderToBeDeleted' ];
+
+    //delete a couple of files using array syntax
+    FileAPI.remove(filesToDelete);
+
+</script>
+
+</body>
+
+</html>
