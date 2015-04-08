@@ -1,7 +1,5 @@
-
-//since the api will be globally accessible, just set it to result of function call
-
-FileAPI = (function(Q){
+//File API
+(function(window, Q){
     "use strict";
 
     /*
@@ -12,7 +10,7 @@ FileAPI = (function(Q){
         - content is null since we're really just testing API and not actually creating files
         - files is array of files contained in folder
      */
-//committing
+
     function File(file){
         this.type = typeof file.type === 'undefined' ? File.TYPES.FILE : file.type;
         this.name = file.name || "";
@@ -24,6 +22,15 @@ FileAPI = (function(Q){
     File.TYPES = {
         FOLDER: 0,
         FILE: 1
+    };
+
+    File.TYPE_NAMES = {
+        0: "folder",
+        1: "file"
+    };
+
+    File.prototype.getTypeName = function(){
+        return File.TYPE_NAMES[this.type];
     };
 
     File.prototype.getFileName = function(fullPath){
@@ -181,7 +188,7 @@ FileAPI = (function(Q){
             path: ""
         }),
 
-        createFunc = function(fullPaths, fileType){
+        createFn = function(fullPaths, fileType){
             var deferred = Q.defer();
 
             if(typeof fullPaths === 'string'){
@@ -197,11 +204,15 @@ FileAPI = (function(Q){
 
                 deferred.resolve(newFiles);
             }
+            else if(typeof fullPaths === "object"){
+                var newFile = rootFile.create(fullPaths.path, fullPaths.type);
+                deferred.resolve(newFile);
+            }
 
             return deferred.promise;
         },
 
-        readFunc = function(fullPaths){
+        readFn = function(fullPaths){
             var deferred = Q.defer();
 
             if(typeof fullPaths === 'string'){
@@ -220,7 +231,7 @@ FileAPI = (function(Q){
             return deferred.promise;
         },
 
-        moveFunc = function(fromFullPath, toFullPath){
+        moveFn = function(fromFullPath, toFullPath){
             var deferred = Q.defer();
 
             if(typeof fromFullPath === 'string'){
@@ -239,7 +250,7 @@ FileAPI = (function(Q){
             return deferred.promise;
         },
 
-        removeFunc = function(fullPaths){
+        removeFn = function(fullPaths){
             var deferred = Q.defer();
 
             function removeFile(fullPath){
@@ -266,13 +277,13 @@ FileAPI = (function(Q){
             return deferred.promise;
         },
 
-        listAllFunc = function(){
+        listAllFn = function(){
 
             printFiles(rootFile);
 
             function printFiles(file){
 
-                console.log(file.path + "\n");
+                console.log("./ " + file.path + " [" + file.getTypeName() + "]\n");
 
                 if(file.type === File.TYPES.FOLDER) {
                     for(var i in file.files){
@@ -282,14 +293,14 @@ FileAPI = (function(Q){
             }
         };
 
-    //api to expose
-    return {
-        create: createFunc,
-        read: readFunc,
-        move: moveFunc,
-        remove: removeFunc,
-        listAll: listAllFunc,
+    //expose api on window object
+    window.FileAPI = {
+        create: createFn,
+        read: readFn,
+        move: moveFn,
+        remove: removeFn,
+        listAll: listAllFn,
         File: File
     };
 
-})(Q);
+})(window, Q);

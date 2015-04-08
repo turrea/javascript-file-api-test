@@ -16,42 +16,64 @@
     //a few tests to perform
 
     //create test folder at root
-    FileAPI.create('testFolder', FileAPI.File.TYPES.FOLDER).then(function(file){
-        console.log(file);
+    var testFolderCreated = FileAPI.create('testFolder', FileAPI.File.TYPES.FOLDER).then(function(file){
+        console.log("testFolder created: ", file);
+
+        //create a test file in that test folder
+        var testFileCreated = FileAPI.create('testFolder/testFile', FileAPI.File.TYPES.FILE);
+
+        testFileCreated.then(function(file){
+            console.log("testFile created in testFolder", file);
+        });
+
+        var testFilesToCreateAtRoot = [
+            { path: 'testFileAtRoot1', type: FileAPI.File.TYPES.FILE },
+            { path: 'testFileAtRoot2', type: FileAPI.File.TYPES.FILE },
+            { path: 'testFileAtRoot3', type: FileAPI.File.TYPES.FILE },
+            { path: 'fileToBeDeleted', type: FileAPI.File.TYPES.FILE },
+            { path: 'folderToBeDeleted', type: FileAPI.File.TYPES.FOLDER }
+        ];
+
+        //create more files at root
+        var moreTestFilesCreated = FileAPI.create(testFilesToCreateAtRoot);
+
+        moreTestFilesCreated.then(function(files){
+            console.log("multiple files created at root: ", files)
+        });
+
+        FileAPI.create({ path: 'testFolder/]]]', type: FileAPI.File.TYPES.FOLDER });
+        //create a subfolder
+        var subfolderCreated = FileAPI.create({ path: 'testFolder/anotherTestFolder', type: FileAPI.File.TYPES.FOLDER });
+
+        //add files to subfolder
+        subfolderCreated.then(function(file){
+            console.log("anotherTestFolder created inside testFolder: ", file);
+
+            return FileAPI.create({ path: 'testFolder/anotherTestFolder/anotherTestFile.txt', type: FileAPI.File.TYPES.FILE }).then(function(file){
+                console.log("file added to subfolder of testFolder: ", file);
+            });
+        });
+
+        //move a file
+        var fileMoved = moreTestFilesCreated.then(function(file){
+            return FileAPI.move("testFileAtRoot1", "testFolder/testFileFromRoot1").then(function(file){
+                console.log("testFileAtRoot1 moved to testFolder: ", file);
+            });
+        });
+
+        var filesToDelete = [ 'fileToBeDeleted', 'folderToBeDeleted' ];
+
+        //delete a couple of files using array syntax
+        var filesDeleted = FileAPI.remove(filesToDelete).then(function(files){
+           console.log("files deleted: ", filesToDelete);
+        });
+
+        Q.all(moreTestFilesCreated, subfolderCreated, fileMoved, filesDeleted).then(function(){
+            console.log('listing out files:');
+            FileAPI.listAll();
+        })
+
     });
-
-    //create a test file in that test folder
-    FileAPI.create('testFolder/testFile', FileAPI.File.TYPES.FILE);
-
-    var filesToCreate = [
-        { path: 'testFileAtRoot1', type: FileAPI.File.TYPES.FILE },
-        { path: 'testFileAtRoot2', type: FileAPI.File.TYPES.FILE },
-        { path: 'testFileAtRoot3', type: FileAPI.File.TYPES.FILE },
-        { path: 'fileToBeDeleted', type: FileAPI.File.TYPES.FILE },
-        { path: 'folderToBeDeleted', type: FileAPI.File.TYPES.FOLDER },
-        { path: 'testFolder/anotherTestFolder', type: FileAPI.File.TYPES.FOLDER },
-        { path: 'testFolder/anotherTestFolder/anotherTestFile.txt', type: FileAPI.File.TYPES.FILE }
-    ];
-
-    //create multiple files at once using array syntax
-    FileAPI.create(filesToCreate).then(function(files){
-        console.log(files)
-    });
-
-    //make sure original test file in test folder is still there
-    FileAPI.read('testFolder/testFile').then(function(file){
-        console.log(file);
-    });
-
-    //move a file at root to the test folder
-    FileAPI.move("testFileAtRoot1", "testFolder/testFileFromRoot1").then(function(){
-        FileAPI.listAll();
-    });
-
-    var filesToDelete = [ 'fileToBeDeleted', 'folderToBeDeleted' ];
-
-    //delete a couple of files using array syntax
-    FileAPI.remove(filesToDelete);
 
 </script>
 
